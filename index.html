@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chi suona il basso?</title>
+<meta name="theme-color" content="#2b1b15">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#2b1b15; --panel:#3a261d; --ink:#f1e6d2; --soft:#bfa98c; --string:#c9b37e; --accent:#e9c46a; --warn:#e38b6d; --ok:#9cc59a;
+  --display:"Bricolage Grotesque","Avenir Next Condensed","Arial Narrow",sans-serif;
+  --body:"Instrument Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ --bg:#efe2c8; --panel:#e4d3b3; --ink:#2b1b15; --soft:#6d5443; --string:#8a7240; --accent:#8c3b1f; --warn:#a8401f; --ok:#3f6b3d; color-scheme:light; }
+}
+:root[data-theme="dark"]{ --bg:#2b1b15; --panel:#3a261d; --ink:#f1e6d2; --soft:#bfa98c; --string:#c9b37e; --accent:#e9c46a; --warn:#e38b6d; --ok:#9cc59a; }
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.55 var(--body);
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+main{max-width:38rem;margin:0 auto;padding:2rem 1rem 3rem}
+h1{font:800 clamp(2.4rem,9vw,3.6rem)/0.95 var(--display);letter-spacing:-0.02em;margin:0 0 .75rem}
+.lede{color:var(--soft);margin:0 0 1.5rem;max-width:32rem}
+.neck{background:var(--panel);border-radius:14px;padding:1.5rem 1rem;margin-bottom:1rem}
+.strings{display:grid;gap:14px;margin-bottom:1.25rem}
+.s{height:calc(1px + var(--w));background:var(--string);border-radius:2px}
+.s:nth-child(1){--w:3.5px}.s:nth-child(2){--w:2.8px}.s:nth-child(3){--w:2px}.s:nth-child(4){--w:1.4px}
+.listening .s{animation:hum .09s linear infinite alternate}
+.listening .s:nth-child(2n){animation-duration:.07s}
+@keyframes hum{to{translate:0 calc(var(--amp,0) * 6px)}}
+@media (prefers-reduced-motion: reduce){.listening .s{animation:none}}
+fieldset.version{display:flex;gap:.4rem;margin:0 0 1rem;padding:0;border:0;flex-wrap:wrap}
+.version legend{color:var(--soft);font-size:.95rem;margin-bottom:.4rem;padding:0}
+.version label{cursor:pointer}
+.version input{position:absolute;opacity:0}
+.version span{display:inline-block;padding:.45rem .9rem;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--soft);color:var(--soft)}
+.version input:checked + span{background:var(--string);color:var(--bg);box-shadow:none}
+.version input:focus-visible + span{outline:3px solid var(--accent);outline-offset:2px}
+.actions{display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
+button,.filebtn{font:600 1rem var(--body);border:0;border-radius:999px;padding:.8rem 1.3rem;cursor:pointer;color:inherit}
+.primary{background:var(--accent);color:var(--bg);font-size:1.1rem}
+button:disabled{opacity:.5;cursor:wait}
+.filebtn,.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--soft)}
+.filebtn input{display:none}
+.link{background:none;padding:0;color:var(--soft);text-decoration:underline;border-radius:4px;font-weight:400}
+button:focus-visible,.filebtn:focus-within,input:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+input[type=text],input[type=password],input[type=search]{width:100%;font:400 1rem var(--body);padding:.6rem .75rem;border-radius:8px;border:1.5px solid var(--soft);background:var(--bg);color:var(--ink)}
+.status{min-height:1.6em;color:var(--soft);margin:1rem 0 0}
+.status.err{color:var(--warn)}
+.search{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.9rem}
+.search .full{grid-column:1/-1}
+.search label{display:block;color:var(--soft);font-size:.95rem;margin-bottom:.25rem}
+#result{margin-top:2rem}
+.track{color:var(--soft);margin:0 0 .25rem}
+.track b{color:var(--ink)}
+.bassist{font:800 clamp(2rem,8vw,3rem)/1.05 var(--display);margin:.25rem 0 .5rem;letter-spacing:-0.015em}
+.verdict{color:var(--soft);margin:0 0 1.25rem}
+.verdict.warn{color:var(--warn)}
+h2{font:700 1.2rem var(--display);margin:2rem 0 .6rem}
+.group{margin:0 0 1rem;padding-left:.9rem;border-left:3px solid var(--string)}
+.group.low{border-left-color:var(--soft);opacity:.85}
+.group .who{font-weight:600;margin:0}
+.group ul{margin:.2rem 0 0;padding:0;list-style:none}
+.group li{font-size:.95rem;color:var(--soft);margin:.15rem 0}
+.group li a,.srcs a,.more a{color:var(--ink)}
+.srcs{margin:0;padding:0;list-style:none;font-size:.95rem}
+.srcs li{display:flex;justify-content:space-between;gap:1rem;padding:.3rem 0;border-top:1px solid color-mix(in srgb,var(--soft) 30%,transparent)}
+.srcs .st{color:var(--soft);text-align:right}
+.srcs .st.ok{color:var(--ok)}
+.srcs .st.err{color:var(--warn)}
+.more{display:flex;flex-wrap:wrap;gap:.5rem 1.25rem;font-size:.95rem}
+.note{color:var(--soft);font-size:.95rem}
+#hist{margin-top:3rem}
+.histbar{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin:.5rem 0 .75rem}
+.histbar input{flex:1;min-width:10rem}
+.hitem{display:flex;gap:.5rem;align-items:baseline;border-top:1px solid color-mix(in srgb,var(--soft) 30%,transparent);padding:.6rem 0}
+.hitem button.open{flex:1;text-align:left;background:none;padding:0;border-radius:4px;font-weight:400}
+.hitem .hb{font-weight:600}
+.hitem .hd{display:block;color:var(--soft);font-size:.9rem}
+.hitem button.del{background:none;color:var(--soft);padding:.2rem .5rem;font-size:1.2rem}
+details{margin-top:1.25rem;color:var(--soft)}
+summary{cursor:pointer}
+details h3{font:700 1rem var(--display);color:var(--ink);margin:1.4rem 0 .2rem}
+details label{display:block;margin:.6rem 0 .3rem;font-size:.95rem}
+details p{font-size:.95rem;margin:.3rem 0}
+details a{color:var(--ink)}
+.row{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<main>
+  <h1>Chi suona il basso?</h1>
+  <p class="lede">Fai ascoltare dieci secondi di musica oppure scrivi titolo e autore: il bassista viene cercato su Discogs, MusicBrainz, Wikipedia e Google, con le fonti.</p>
+
+  <section class="neck" id="neck">
+    <div class="strings" aria-hidden="true"><div class="s"></div><div class="s"></div><div class="s"></div><div class="s"></div></div>
+    <fieldset class="version">
+      <legend>Versione</legend>
+      <label><input type="radio" name="ver" value="studio" checked><span>In studio</span></label>
+      <label><input type="radio" name="ver" value="live"><span>Dal vivo</span></label>
+      <label><input type="radio" name="ver" value="unknown"><span>Non so</span></label>
+    </fieldset>
+    <div id="concertWrap" hidden style="margin-bottom:1rem">
+      <input type="text" id="concert" placeholder="Concerto o tour, se lo sai">
+    </div>
+    <div class="actions">
+      <button class="primary" id="go">Ascolta</button>
+      <label class="filebtn">Carica un file audio<input type="file" id="file" accept="audio/*,video/*"></label>
+    </div>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="neck">
+    <form id="textForm" class="search">
+      <div class="full"><label for="tTitle">Titolo</label><input type="text" id="tTitle" autocomplete="off"></div>
+      <div><label for="tArtist">Autore</label><input type="text" id="tArtist" autocomplete="off"></div>
+      <div><label for="tYear">Anno</label><input type="text" id="tYear" inputmode="numeric" autocomplete="off" placeholder="facoltativo"></div>
+    </form>
+    <button class="ghost" id="tGo" form="textForm" type="submit">Cerca il bassista</button>
+  </section>
+
+  <section id="result" hidden aria-live="polite"></section>
+
+  <section id="hist" aria-labelledby="histTitle">
+    <h2 id="histTitle">Storico</h2>
+    <div class="histbar">
+      <label for="hFilter" class="sr">Filtra lo storico</label>
+      <input type="search" id="hFilter" placeholder="Filtra per titolo, autore, bassista">
+    </div>
+    <div id="histList"></div>
+    <div class="row">
+      <button class="link" id="hExport">Esporta lo storico</button>
+      <label class="link" style="cursor:pointer">Importa<input type="file" id="hImport" accept="application/json,.json" hidden></label>
+    </div>
+  </section>
+
+  <details id="settings">
+    <summary>Chiavi e fonti</summary>
+    <p>Le chiavi restano salvate solo in questo browser: il file pubblicato non ne contiene nessuna. Per il riconoscimento ne basta una; le altre vengono provate se la prima non trova il brano.</p>
+
+    <h3>Riconoscimento</h3>
+    <label for="kAudd">Token AudD</label><input type="password" id="kAudd" data-k="audd" autocomplete="off">
+    <label for="kAcrHost">ACRCloud, host</label><input type="text" id="kAcrHost" data-k="acrHost" autocomplete="off" placeholder="identify-eu-west-1.acrcloud.com">
+    <label for="kAcrKey">ACRCloud, access key</label><input type="password" id="kAcrKey" data-k="acrKey" autocomplete="off">
+    <label for="kAcrSecret">ACRCloud, access secret</label><input type="password" id="kAcrSecret" data-k="acrSecret" autocomplete="off">
+    <label for="kRapid">Shazam via RapidAPI, chiave</label><input type="password" id="kRapid" data-k="rapid" autocomplete="off">
+
+    <h3>Ricerca del bassista</h3>
+    <label for="kDiscogs">Token personale Discogs</label><input type="password" id="kDiscogs" data-k="discogs" autocomplete="off">
+    <p>Si crea gratis da discogs.com, Impostazioni, Sviluppatori. È la fonte con i crediti più ricchi per brano.</p>
+    <label for="kGemini">Chiave Gemini</label><input type="password" id="kGemini" data-k="gemini" autocomplete="off">
+    <label for="kModel">Modello Gemini</label><input type="text" id="kModel" data-k="model" autocomplete="off" placeholder="automatico">
+    <p>MusicBrainz e Wikipedia non richiedono chiavi.</p>
+
+    <div class="row">
+      <button class="ghost" id="copySetup">Copia link di configurazione</button>
+    </div>
+    <p>Il link contiene tutte le chiavi: aprilo su un altro dispositivo per configurarlo in un tocco. Tienilo per te.</p>
+  </details>
+</main>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const statusEl = $('#status'), resultEl = $('#result'), neck = $('#neck');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : null;
+function say(msg, err){ statusEl.textContent = msg; statusEl.classList.toggle('err', !!err); }
+
+// ---------- Impostazioni ----------
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v == null ? d : v; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, v); } catch(e){} },
+};
+const KEYS = {};
+document.querySelectorAll('[data-k]').forEach(el => {
+  const k = el.dataset.k;
+  el.value = KEYS[k] = store.get('csb_' + k, '');
+  el.addEventListener('change', () => { KEYS[k] = el.value.trim(); store.set('csb_' + k, KEYS[k]); });
+});
+(function readSetupLink(){
+  const m = location.hash.match(/setup=([^&]+)/);
+  if (!m) return;
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,'+').replace(/_/g,'/')))));
+    for (const [k, v] of Object.entries(data)){
+      if (typeof v !== 'string') continue;
+      KEYS[k] = v; store.set('csb_' + k, v);
+      const el = document.querySelector(`[data-k="${k}"]`); if (el) el.value = v;
+    }
+    say('Configurazione salvata in questo browser.');
+  } catch(e){ say('Link di configurazione non valido.', true); }
+  history.replaceState(null, '', location.pathname + location.search);
+})();
+if (!KEYS.audd && !KEYS.acrKey && !KEYS.rapid) $('#settings').open = true;
+$('#copySetup').addEventListener('click', async () => {
+  const data = {}; for (const [k, v] of Object.entries(KEYS)) if (v) data[k] = v;
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const link = location.origin + location.pathname + '#setup=' + b64;
+  try { await navigator.clipboard.writeText(link); say('Link copiato negli appunti.'); }
+  catch(e){ prompt('Copia questo link:', link); }
+});
+
+const version = () => document.querySelector('input[name=ver]:checked').value;
+document.querySelectorAll('input[name=ver]').forEach(r => r.addEventListener('change', () => { $('#concertWrap').hidden = version() !== 'live'; }));
+
+// ---------- Testo ----------
+const deaccent = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '');
+const apos = s => (s || '').replace(/[’‘`´]/g, "'");
+function cleanTitle(t){
+  return apos(t || '')
+    .replace(/\s*[\(\[][^\)\]]*(remaster|remix|version|versione|live|edit|mono|stereo|deluxe|bonus|feat\.?|ft\.?)[^\)\]]*[\)\]]/ig, '')
+    .replace(/\s+-\s+.*(remaster|remix|version|versione|live|edit|mono|stereo).*$/i, '')
+    .trim();
+}
+const norm = s => deaccent(apos(cleanTitle(s))).toLowerCase().replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+const normName = s => deaccent(apos(s || '')).toLowerCase().replace(/\s*\(\d+\)$/, '').replace(/\*$/, '').replace(/[^\p{L}\p{N} ]+/gu, ' ').replace(/\s+/g, ' ').trim();
+const displayName = s => (s || '').replace(/\s*\(\d+\)$/, '').replace(/\*$/, '').trim();
+const titleMatch = (a, b) => { const x = norm(a), y = norm(b); return !!x && !!y && (x === y || x.includes(y) || y.includes(x)); };
+
+const BASS_RE = /\b(bass|bass guitar|electric bass|double bass|upright bass|fretless bass|synth bass|basso|contrabbasso|basse|contrebasse|bassgitarre|kontrabass|e-bass)\b/i;
+const NOT_BASS_RE = /(bassoon|bass drum|bass clarinet|bass trombone|bass flute|bass sax|bass harmonica|bass vocal|vocals|voce|fagotto|clarinetto basso|grancassa|tuba|bass baritone)/i;
+const isBassPiece = s => BASS_RE.test(s) && !NOT_BASS_RE.test(s);
+const isBassRole = s => String(s || '').split(/,\s*|;\s*/).some(isBassPiece);
+
+// ---------- Audio ----------
+async function record(seconds = 10){
+  const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+  const types = ['audio/webm;codecs=opus','audio/mp4','audio/webm'];
+  const mimeType = types.find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+  const rec = new MediaRecorder(stream, mimeType ? {mimeType} : undefined);
+  const chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const an = ctx.createAnalyser(); an.fftSize = 512; ctx.createMediaStreamSource(stream).connect(an);
+  const buf = new Uint8Array(an.fftSize); let raf;
+  const meter = () => { an.getByteTimeDomainData(buf); let m = 0; for (const v of buf) m = Math.max(m, Math.abs(v - 128)); neck.style.setProperty('--amp', (m / 128).toFixed(2)); raf = requestAnimationFrame(meter); };
+  meter(); neck.classList.add('listening');
+  rec.start();
+  try { for (let i = seconds; i > 0; i--){ say(`In ascolto… ${i}`); await sleep(1000); } }
+  finally {
+    const done = new Promise(r => rec.onstop = r); rec.stop(); await done;
+    cancelAnimationFrame(raf); neck.classList.remove('listening'); neck.style.setProperty('--amp', 0);
+    stream.getTracks().forEach(t => t.stop()); ctx.close();
+  }
+  return new Blob(chunks, {type: rec.mimeType || 'audio/webm'});
+}
+async function decodeMono(blob, rate){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const ctx = new AC();
+  const audio = await ctx.decodeAudioData(await blob.arrayBuffer());
+  ctx.close();
+  const off = new OfflineAudioContext(1, Math.ceil(audio.duration * rate), rate);
+  const src = off.createBufferSource(); src.buffer = audio; src.connect(off.destination); src.start();
+  return (await off.startRendering()).getChannelData(0);
+}
+function pcm16(f32){
+  const out = new Int16Array(f32.length);
+  for (let i = 0; i < f32.length; i++){ const v = Math.max(-1, Math.min(1, f32[i])); out[i] = v < 0 ? v * 0x8000 : v * 0x7fff; }
+  return out;
+}
+function wavBlob(f32, rate){
+  const pcm = pcm16(f32), b = new ArrayBuffer(44 + pcm.byteLength), d = new DataView(b);
+  const w = (o, s) => [...s].forEach((c, i) => d.setUint8(o + i, c.charCodeAt(0)));
+  w(0,'RIFF'); d.setUint32(4, 36 + pcm.byteLength, true); w(8,'WAVE'); w(12,'fmt ');
+  d.setUint32(16,16,true); d.setUint16(20,1,true); d.setUint16(22,1,true); d.setUint32(24,rate,true);
+  d.setUint32(28,rate*2,true); d.setUint16(32,2,true); d.setUint16(34,16,true); w(36,'data'); d.setUint32(40,pcm.byteLength,true);
+  new Int16Array(b, 44).set(pcm);
+  return new Blob([b], {type:'audio/wav'});
+}
+function b64bytes(u8){ let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+
+// ---------- Riconoscimento ----------
+const RECOGNIZERS = [
+  {name:'AudD', ready: () => !!KEYS.audd, run: async blob => {
+    const fd = new FormData();
+    fd.append('api_token', KEYS.audd); fd.append('file', blob, 'sample'); fd.append('return', 'apple_music,spotify,musicbrainz');
+    const j = await (await fetch('https://api.audd.io/', {method:'POST', body:fd})).json();
+    if (j.status === 'error') throw new Error(j.error?.error_message || 'errore');
+    const r = j.result; if (!r) return null;
+    return {title:r.title, artist:r.artist, album:r.album || '', year:(r.release_date || '').slice(0,4),
+      isrc: r.apple_music?.isrc || r.spotify?.external_ids?.isrc || '',
+      mbids: (r.musicbrainz || []).map(x => x.id).filter(Boolean)};
+  }},
+  {name:'ACRCloud', ready: () => !!(KEYS.acrHost && KEYS.acrKey && KEYS.acrSecret), run: async blob => {
+    const wav = wavBlob(await decodeMono(blob, 16000), 16000);
+    const ts = Math.floor(Date.now() / 1000).toString();
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey('raw', enc.encode(KEYS.acrSecret), {name:'HMAC', hash:'SHA-1'}, false, ['sign']);
+    const sig = b64bytes(new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(['POST','/v1/identify',KEYS.acrKey,'audio','1',ts].join('\n')))));
+    const fd = new FormData();
+    fd.append('sample', wav, 'sample.wav'); fd.append('sample_bytes', wav.size); fd.append('access_key', KEYS.acrKey);
+    fd.append('data_type', 'audio'); fd.append('signature_version', '1'); fd.append('signature', sig); fd.append('timestamp', ts);
+    const host = KEYS.acrHost.replace(/^https?:\/\//,'').replace(/\/.*$/,'');
+    const j = await (await fetch(`https://${host}/v1/identify`, {method:'POST', body:fd})).json();
+    if (j.status?.code === 1001) return null;
+    if (j.status?.code !== 0) throw new Error(j.status?.msg || 'errore');
+    const m = j.metadata?.music?.[0]; if (!m) return null;
+    return {title:m.title, artist:(m.artists || []).map(a => a.name).join(', '), album:m.album?.name || '', year:(m.release_date || '').slice(0,4), isrc:m.external_ids?.isrc || '', mbids:[]};
+  }},
+  {name:'Shazam', ready: () => !!KEYS.rapid, run: async blob => {
+    const f = await decodeMono(blob, 44100);
+    const len = Math.min(f.length, Math.floor(44100 * 3.5)), start = Math.max(0, Math.floor((f.length - len) / 2));
+    const body = b64bytes(new Uint8Array(pcm16(f.subarray(start, start + len)).buffer));
+    const r = await fetch('https://shazam.p.rapidapi.com/songs/v2/detect?timezone=Europe%2FRome&locale=it-IT', {
+      method:'POST', body, headers:{'content-type':'text/plain', 'x-rapidapi-key':KEYS.rapid, 'x-rapidapi-host':'shazam.p.rapidapi.com'}});
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.message || r.status);
+    const t = j.track; if (!t) return null;
+    const meta = (t.sections || []).flatMap(s => s.metadata || []);
+    const get = k => meta.find(x => (x.title || '').toLowerCase().startsWith(k))?.text || '';
+    return {title:t.title, artist:t.subtitle, album:get('album'), year:get('rilasciato') || get('released'), isrc:t.isrc || '', mbids:[]};
+  }},
+];
+async function recognize(blob){
+  const ready = RECOGNIZERS.filter(r => r.ready());
+  if (!ready.length) throw new Error('Nessun servizio di riconoscimento configurato: inserisci almeno una chiave in "Chiavi e fonti".');
+  const errors = [];
+  for (const r of ready){
+    say(`Riconosco il brano con ${r.name}…`);
+    try { const t = await r.run(blob); if (t && t.title) return {...t, by:r.name}; errors.push(`${r.name}: nessun risultato`); }
+    catch(e){ errors.push(`${r.name}: ${e.name === 'TypeError' ? 'servizio non raggiungibile' : e.message}`); }
+  }
+  throw new Error('Brano non riconosciuto. ' + errors.join('; ') + '.');
+}
+
+// ---------- Fonti per il bassista ----------
+// Ogni fonte restituisce una lista di prove: {name, kind: brano|album|formazione, source, label, url, detail}
+const KIND_W = {brano:3, album:2, formazione:1};
+const KIND_TXT = {brano:'credito del brano', album:'credito del disco', formazione:'dedotto dalla formazione del gruppo'};
+
+// Discogs
+async function dg(path){
+  const r = await fetch('https://api.discogs.com/' + path + (path.includes('?') ? '&' : '?') + 'token=' + encodeURIComponent(KEYS.discogs));
+  if (r.status === 429){ await sleep(1500); return dg(path); }
+  if (!r.ok) throw new Error('Discogs ' + r.status);
+  return r.json();
+}
+function inTrackSpec(spec, pos, positions){
+  if (!spec) return true;
+  const idx = p => positions.indexOf(p.trim().toUpperCase());
+  const me = idx(pos);
+  return spec.split(/,|&/).some(part => {
+    const m = part.split(/\s+to\s+/i);
+    if (m.length === 2){ const a = idx(m[0]), b = idx(m[1]); return me >= 0 && a >= 0 && b >= 0 && me >= a && me <= b; }
+    return part.trim().toUpperCase() === pos.trim().toUpperCase();
+  });
+}
+async function discogsSource(t){
+  const q = new URLSearchParams({type:'release', artist:t.artist, track:cleanTitle(t.title), per_page:'10'});
+  const s = await dg('database/search?' + q);
+  let res = (s.results || []).filter(r => r.type === 'release');
+  const comp = r => (r.format || []).some(f => /compilation/i.test(f)) ? 1 : 0;
+  const yr = r => parseInt(r.year) || 9999;
+  res.sort((a, b) => (t.year ? (yr(a) == t.year ? 0 : 1) - (yr(b) == t.year ? 0 : 1) : 0) || comp(a) - comp(b) || yr(a) - yr(b));
+  const out = [];
+  for (const r of res.slice(0, 3)){
+    const rel = await dg('releases/' + r.id);
+    const tracks = (rel.tracklist || []).filter(x => x.type_ !== 'heading');
+    const tr = tracks.find(x => titleMatch(x.title, t.title));
+    if (!tr) continue;
+    const positions = tracks.map(x => (x.position || '').toUpperCase());
+    const url = rel.uri || `https://www.discogs.com/release/${rel.id}`;
+    const label = `Discogs, «${rel.title}» (${rel.year || 's.d.'})`;
+    for (const a of tr.extraartists || [])
+      if (isBassRole(a.role)) out.push({name: a.anv || a.name, kind:'brano', source:'Discogs', label, url, detail:`${a.role} nella traccia ${tr.position}`});
+    for (const a of rel.extraartists || []){
+      if (!isBassRole(a.role)) continue;
+      if (a.tracks && !inTrackSpec(a.tracks, tr.position || '', positions)) continue;
+      out.push({name: a.anv || a.name, kind: a.tracks ? 'brano' : 'album', source:'Discogs', label, url, detail: a.tracks ? `${a.role}, tracce ${a.tracks}` : `${a.role} su tutto il disco`});
+    }
+    if (out.length) break;
+  }
+  return out;
+}
+
+// MusicBrainz
+let lastMB = 0;
+async function mb(path){
+  const wait = 1100 - (Date.now() - lastMB); if (wait > 0) await sleep(wait);
+  lastMB = Date.now();
+  const r = await fetch('https://musicbrainz.org/ws/2/' + path + (path.includes('?') ? '&' : '?') + 'fmt=json');
+  if (r.status === 503){ await sleep(1500); return mb(path); }
+  if (!r.ok) throw new Error('MusicBrainz ' + r.status);
+  return r.json();
+}
+const mbBass = rels => (rels || []).filter(r => r['target-type'] === 'artist' && r.artist && (r.type === 'instrument' || r.type === 'performer') && (r.attributes || []).some(isBassPiece));
+async function musicbrainzSource(t){
+  let ids = [...(t.mbids || [])];
+  if (!ids.length && t.isrc){ try { ids = ((await mb('isrc/' + t.isrc)).recordings || []).map(r => r.id); } catch(e){} }
+  if (!ids.length){
+    const q = encodeURIComponent(`recording:"${cleanTitle(t.title)}" AND artist:"${t.artist}"`);
+    ids = ((await mb(`recording?query=${q}&limit=5`)).recordings || []).filter(r => titleMatch(r.title, t.title)).map(r => r.id);
+  }
+  const out = [], releases = [], artists = new Set();
+  for (const id of ids.slice(0, 3)){
+    const d = await mb(`recording/${id}?inc=artist-rels+releases+artist-credits`);
+    (d['artist-credit'] || []).forEach(a => artists.add(a.artist.id));
+    for (const r of mbBass(d.relations)) out.push({name:r.artist.name, kind:'brano', source:'MusicBrainz', label:'MusicBrainz, registrazione', url:'https://musicbrainz.org/recording/' + id, detail:r.attributes.join(', ')});
+    releases.push(...(d.releases || []).map(r => r.id));
+    if (out.length) return out;
+  }
+  for (const id of [...new Set(releases)].slice(0, 2)){
+    const d = await mb(`release/${id}?inc=artist-rels`);
+    for (const r of mbBass(d.relations)) out.push({name:r.artist.name, kind:'album', source:'MusicBrainz', label:`MusicBrainz, «${d.title}»`, url:'https://musicbrainz.org/release/' + id, detail:r.attributes.join(', ')});
+    if (out.length) return out;
+  }
+  const year = parseInt(t.year) || null;
+  for (const id of [...artists].slice(0, 1)){
+    const a = await mb(`artist/${id}?inc=artist-rels`);
+    if (a.type !== 'Group') continue;
+    for (const r of (a.relations || []).filter(r => r.type === 'member of band' && r.direction === 'backward' && (r.attributes || []).some(isBassPiece))){
+      const b = parseInt(r.begin) || -Infinity, e = parseInt(r.end) || Infinity;
+      if (year && !(b <= year && year <= e)) continue;
+      out.push({name:r.artist.name, kind:'formazione', source:'MusicBrainz', label:`MusicBrainz, formazione di ${a.name}`, url:'https://musicbrainz.org/artist/' + id, detail: `${r.attributes.join(', ')}${r.begin ? ', dal ' + r.begin.slice(0,4) : ''}${r.end ? ' al ' + r.end.slice(0,4) : ''}`});
+    }
+  }
+  return out;
+}
+
+// Wikipedia
+const WIKI_LANGS = ['it', 'en', 'fr', 'de', 'es'];
+async function wiki(lang, params){
+  const r = await fetch(`https://${lang}.wikipedia.org/w/api.php?` + new URLSearchParams({...params, format:'json', origin:'*'}));
+  if (!r.ok) throw new Error('Wikipedia ' + r.status);
+  return r.json();
+}
+const cleanWiki = s => s.replace(/<ref[^>]*\/>/g,'').replace(/<ref[\s\S]*?<\/ref>/g,'').replace(/\{\{[^{}]*\}\}/g,'')
+  .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g,'$1').replace(/'{2,}/g,'').replace(/<[^>]+>/g,'').trim();
+const SECTION_RE = /^=+\s*(personnel|musicians|credits|line-?up|track personnel|formazione|musicisti|crediti|musiciens|personnel|crédits|besetzung|musiker|mitwirkende|personal|músicos|créditos)/i;
+const LIMITED_RE = /(bass|basso|contrabbasso|basse|bajo)[^,;]*?(\(|\s(in|on|nel|nei|sul|sui|sur|auf|en)\s)/i;
+function wikiBass(wt, title){
+  const t = norm(title);
+  const lines = wt.split(/\n(?==)/).filter(sec => SECTION_RE.test(sec))
+    .flatMap(sec => sec.split('\n').filter(l => /^[*#]/.test(l)).map(l => cleanWiki(l.replace(/^[*#]+\s*/, ''))));
+  return lines.filter(l => isBassRole(l.replace(/^[^–—:-]*[–—:-]/, '')) || isBassRole(l))
+    .filter(l => !LIMITED_RE.test(l) || norm(l).includes(t))
+    .map(l => ({name: l.split(/\s+[–—-]\s+|:\s+|\s+\(|,\s+(?=\p{Ll})/u)[0].trim(), line:l}))
+    .filter(x => x.name && x.name.length < 60 && !BASS_RE.test(x.name));
+}
+async function wikipediaSource(t){
+  const per = await Promise.allSettled(WIKI_LANGS.map(async lang => {
+    const s = await wiki(lang, {action:'query', list:'search', srsearch:`${cleanTitle(t.title)} ${t.artist}`, srlimit:'5'});
+    const hit = (s.query?.search || []).find(h => titleMatch(h.title, t.title));
+    const pages = [];
+    if (hit) pages.push({title: hit.title, kind:'brano'});
+    const out = [];
+    const read = async (title, kind) => {
+      const p = await wiki(lang, {action:'parse', page:title, prop:'wikitext', redirects:'1'});
+      const wt = p.parse?.wikitext?.['*'] || '', real = p.parse?.title || title;
+      const url = `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(real.replace(/ /g, '_'))}`;
+      for (const b of wikiBass(wt, t.title)) out.push({name:b.name, kind, source:'Wikipedia', label:`Wikipedia ${lang}, «${real}»`, url, detail:b.line});
+      return wt;
+    };
+    let albumTitle = null;
+    if (hit){
+      const wt = await read(hit.title, 'brano');
+      const m = wt.match(/\|\s*(?:album(?:\s+di\s+provenienza)?|from album)\s*=\s*(?:'')?\[\[([^\]|#]+)/i);
+      if (m) albumTitle = m[1].trim();
+    }
+    if (!out.length && !albumTitle && t.album){
+      const s2 = await wiki(lang, {action:'query', list:'search', srsearch:`${t.album} ${t.artist}`, srlimit:'3'});
+      albumTitle = (s2.query?.search || []).find(h => titleMatch(h.title, t.album))?.title || null;
+    }
+    if (!out.length && albumTitle) await read(albumTitle, 'album');
+    return out;
+  }));
+  return per.flatMap(p => p.status === 'fulfilled' ? p.value : []);
+}
+
+// Gemini con ricerca Google
+const AUTO_MODELS = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+async function geminiSource(t, ver, concert){
+  const versione = ver === 'live' ? `la versione DAL VIVO${concert ? ` (${concert})` : ''}: interessa chi suonava il basso in quel concerto o tour, non nel disco in studio`
+    : ver === 'studio' ? 'la versione IN STUDIO' : 'la versione in studio originale, salvo indicazioni diverse';
+  const prompt = `Cerca sul web chi suona il basso (basso elettrico, contrabbasso, synth bass) nel brano "${cleanTitle(t.title)}" di ${t.artist}${t.album ? `, album "${t.album}"` : ''}${t.year ? `, anno ${t.year}` : ''}. Riguarda ${versione}.
+Regole: cerca in crediti di dischi (Discogs, AllMusic, note di copertina), siti ufficiali, Wikipedia in più lingue, interviste, articoli. Distingui credito del singolo brano, credito dell'album intero, deduzione dalla formazione. Se le fonti non concordano riportale tutte. Usa solo fonti trovate davvero; non inventare nomi né indirizzi. Se non trovi nulla di affidabile, lista vuota.
+Rispondi SOLO con JSON valido, senza testo attorno: {"bassisti":[{"nome":"...","tipo":"brano|album|formazione","fonte":"...","url":"...","dettaglio":"breve frase in italiano"}]}`;
+  const models = KEYS.model ? [KEYS.model] : AUTO_MODELS;
+  let j = null, last = '';
+  for (const m of models){
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, {
+      method:'POST', headers:{'Content-Type':'application/json', 'x-goog-api-key':KEYS.gemini},
+      body: JSON.stringify({contents:[{role:'user', parts:[{text:prompt}]}], tools:[{google_search:{}}]})});
+    const body = await r.json().catch(() => ({}));
+    if (r.ok){ j = body; j._m = m; break; }
+    last = body.error?.message || String(r.status);
+    if (!(r.status === 429 || r.status === 404 || /quota|not found|not supported/i.test(last))) throw new Error(last);
+  }
+  if (!j) throw new Error(/quota/i.test(last) ? 'quota esaurita su tutti i modelli' : last);
+  const cand = j.candidates?.[0];
+  const text = (cand?.content?.parts || []).map(p => p.text || '').join('');
+  const grounded = (cand?.groundingMetadata?.groundingChunks || []).map(c => c.web).filter(Boolean);
+  let data; try { data = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); } catch(e){ throw new Error('risposta non leggibile'); }
+  const kindOf = s => /formaz/i.test(s) ? 'formazione' : /album|disco/i.test(s) ? 'album' : 'brano';
+  return (data.bassisti || []).filter(b => b && b.nome).map(b => ({
+    name:b.nome, kind:kindOf(b.tipo || ''), source:'Google (Gemini)', label:`${b.fonte || 'web'}, via Gemini ${j._m}`,
+    url: safeUrl(b.url) || grounded[0]?.uri || null, detail:b.dettaglio || ''}));
+}
+
+const SOURCES = [
+  {name:'Discogs', ready: () => !!KEYS.discogs, missing:'manca il token', run: t => discogsSource(t)},
+  {name:'MusicBrainz', ready: () => true, run: t => musicbrainzSource(t)},
+  {name:'Wikipedia', ready: () => true, run: t => wikipediaSource(t)},
+  {name:'Google (Gemini)', ready: () => !!KEYS.gemini, missing:'manca la chiave', run: (t, v, c) => geminiSource(t, v, c)},
+];
+
+async function findBassist(track, ver, concert){
+  const report = [];
+  let pending = SOURCES.filter(s => s.ready()).length;
+  say(`Interrogo ${pending} fonti…`);
+  const results = await Promise.all(SOURCES.map(async s => {
+    if (!s.ready()){ report.push({name:s.name, st:'non attiva, ' + s.missing}); return []; }
+    try {
+      const ev = await s.run(track, ver, concert);
+      report.push({name:s.name, st: ev.length ? `${ev.length} ${ev.length === 1 ? 'credito' : 'crediti'}` : 'nessun credito', ok: ev.length > 0});
+      return ev;
+    } catch(e){
+      report.push({name:s.name, st: e.name === 'TypeError' ? 'non raggiungibile' : e.message, err:true});
+      return [];
+    } finally { pending--; if (pending > 0) say(`Attendo ancora ${pending} ${pending === 1 ? 'fonte' : 'fonti'}…`); }
+  }));
+  report.sort((a, b) => SOURCES.findIndex(s => s.name === a.name) - SOURCES.findIndex(s => s.name === b.name));
+  return {evidence: results.flat(), report};
+}
+
+function groupEvidence(ev){
+  const groups = new Map();
+  for (const e of ev){
+    const k = normName(e.name); if (!k) continue;
+    if (!groups.has(k)) groups.set(k, {name: displayName(e.name), items: []});
+    groups.get(k).items.push(e);
+  }
+  const arr = [...groups.values()].map(g => {
+    const best = Math.max(...g.items.map(i => KIND_W[i.kind] || 1));
+    const sources = new Set(g.items.map(i => i.source));
+    return {...g, best, nSources: sources.size};
+  });
+  arr.sort((a, b) => b.best - a.best || b.nSources - a.nSources || b.items.length - a.items.length);
+  return arr;
+}
+
+// ---------- Presentazione ----------
+function moreLinks(t){
+  const q = `${cleanTitle(t.title)} ${t.artist}`;
+  return `<div class="more">
+    <a href="https://www.google.com/search?q=${encodeURIComponent(`chi suona il basso "${cleanTitle(t.title)}" ${t.artist}${t.year ? ' ' + t.year : ''}`)}" target="_blank" rel="noopener">Google</a>
+    <a href="https://www.discogs.com/search/?type=all&q=${encodeURIComponent(q)}" target="_blank" rel="noopener">Discogs</a>
+    <a href="https://www.allmusic.com/search/all/${encodeURIComponent(q)}" target="_blank" rel="noopener">AllMusic</a>
+    <a href="https://musicbrainz.org/search?type=recording&query=${encodeURIComponent(q)}" target="_blank" rel="noopener">MusicBrainz</a>
+  </div>`;
+}
+function render(entry){
+  const t = entry.track, groups = groupEvidence(entry.evidence || []);
+  const yr = t.year ? ` (${esc(t.year)})` : '';
+  let h = `<p class="track"><b>${esc(t.title)}</b> di ${esc(t.artist)}${t.album ? `, da ${esc(t.album)}` : ''}${yr}${t.by ? `. Riconosciuto da ${esc(t.by)}` : ''}</p>`;
+  if (groups.length){
+    const top = groups.filter(g => g.best === groups[0].best);
+    h += `<p class="bassist">${top.map(g => esc(g.name)).join(' / ')}</p>`;
+    const lvl = KIND_TXT[{3:'brano', 2:'album', 1:'formazione'}[groups[0].best]];
+    if (top.length > 1) h += `<p class="verdict warn">Più nomi con lo stesso livello di prova (${esc(lvl)}): fonti in disaccordo oppure più bassisti nel brano. Controlla i dettagli.</p>`;
+    else h += `<p class="verdict${groups[0].best === 1 ? ' warn' : ''}">Livello di prova più alto: ${esc(lvl)}, ${groups[0].nSources} ${groups[0].nSources === 1 ? 'fonte' : 'fonti'}.</p>`;
+    if (entry.version === 'live') h += `<p class="note">Hai indicato una versione dal vivo: Discogs, MusicBrainz e Wikipedia riportano di solito i crediti dei dischi, quindi possono riferirsi alla versione in studio.</p>`;
+    h += `<h2>Prove</h2>` + groups.map(g => `<div class="group${g.best === 1 ? ' low' : ''}"><p class="who">${esc(g.name)}</p><ul>${
+      g.items.map(i => { const u = safeUrl(i.url); return `<li>${esc(KIND_TXT[i.kind])}, ${u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(i.label)}</a>` : esc(i.label)}${i.detail ? `: ${esc(i.detail)}` : ''}</li>`; }).join('')}</ul></div>`).join('');
+  } else {
+    h += `<p class="bassist">Bassista non trovato</p><p class="verdict">Nessuna delle fonti attive riporta il basso per questo brano o il suo disco.</p>`;
+  }
+  h += `<h2>Fonti interrogate</h2><ul class="srcs">${(entry.report || []).map(r => `<li><span>${esc(r.name)}</span><span class="st${r.ok ? ' ok' : r.err ? ' err' : ''}">${esc(r.st)}</span></li>`).join('')}</ul>`;
+  h += `<h2>Cerca anche su</h2>` + moreLinks(t);
+  resultEl.innerHTML = h; resultEl.hidden = false;
+}
+
+// ---------- Storico ----------
+const HKEY = 'csb_history';
+const loadHist = () => { try { return JSON.parse(store.get(HKEY, '[]')) || []; } catch(e){ return []; } };
+const saveHist = a => store.set(HKEY, JSON.stringify(a.slice(0, 500)));
+const fmtDate = ts => new Date(ts).toLocaleString('it-IT', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'});
+const verTxt = v => v === 'live' ? 'dal vivo' : v === 'studio' ? 'in studio' : 'versione non indicata';
+const topNames = e => { const g = groupEvidence(e.evidence || []); return g.filter(x => x.best === g[0]?.best).map(x => x.name); };
+function renderHist(){
+  const f = norm($('#hFilter').value);
+  const items = loadHist();
+  const shown = items.map((e, i) => ({e, i})).filter(({e}) => !f || norm(`${e.track.title} ${e.track.artist} ${topNames(e).join(' ')}`).includes(f));
+  $('#histList').innerHTML = shown.length ? shown.map(({e, i}) => {
+    const n = topNames(e);
+    return `<div class="hitem"><button class="open" data-i="${i}"><span class="hb">${esc(e.track.title)}</span>, ${esc(e.track.artist)}<span class="hd">${esc(n.length ? n.join(' / ') : 'non trovato')}, ${esc(verTxt(e.version))}, ${esc(fmtDate(e.ts))}</span></button><button class="del" data-i="${i}" aria-label="Elimina ${esc(e.track.title)}">×</button></div>`;
+  }).join('') : `<p class="note">${items.length ? 'Nessuna ricerca corrisponde al filtro.' : 'Le ricerche che fai compariranno qui.'}</p>`;
+}
+$('#hFilter').addEventListener('input', renderHist);
+$('#histList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const items = loadHist(), it = items[+b.dataset.i]; if (!it) return;
+  if (b.classList.contains('open')){ render(it); resultEl.scrollIntoView({behavior:'smooth', block:'start'}); return; }
+  if (!confirm(`Eliminare "${it.track.title}" dallo storico?`)) return;
+  items.splice(+b.dataset.i, 1); saveHist(items); renderHist();
+});
+$('#hExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(loadHist(), null, 1)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `storico-bassisti-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('#hImport').addEventListener('change', async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const add = JSON.parse(await f.text()); if (!Array.isArray(add)) throw 0;
+    const all = [...add, ...loadHist()].filter(x => x && x.track && x.ts);
+    const seen = new Set(), merged = all.filter(x => { const k = x.ts + x.track.title; if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => b.ts - a.ts);
+    saveHist(merged); renderHist(); say(`Storico importato: ${merged.length} ricerche.`);
+  } catch(err){ say('File di storico non valido.', true); }
+});
+
+// ---------- Flusso ----------
+const buttons = () => document.querySelectorAll('#go, #tGo');
+async function lookup(track){
+  const ver = version(), concert = $('#concert').value.trim();
+  const {evidence, report} = await findBassist(track, ver, concert);
+  const entry = {ts: Date.now(), track, version: ver, concert, evidence, report};
+  render(entry); say('');
+  saveHist([entry, ...loadHist()]); renderHist();
+  resultEl.scrollIntoView({behavior:'smooth', block:'start'});
+}
+async function guarded(fn){
+  buttons().forEach(b => b.disabled = true); resultEl.hidden = true;
+  try { await fn(); }
+  catch(e){
+    say(e.name === 'NotAllowedError' ? 'Il microfono è bloccato: consenti l’accesso nelle impostazioni del browser.'
+      : e.name === 'TypeError' ? 'Richiesta di rete fallita: controlla la connessione.' : e.message, true);
+  } finally { buttons().forEach(b => b.disabled = false); }
+}
+$('#go').addEventListener('click', () => {
+  if (!navigator.mediaDevices?.getUserMedia){ say('Il microfono funziona solo da https. Puoi caricare un file audio o cercare per titolo.', true); return; }
+  guarded(async () => lookup(await recognize(await record(10))));
+});
+$('#file').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) guarded(async () => lookup(await recognize(f))); });
+$('#textForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const title = $('#tTitle').value.trim(), artist = $('#tArtist').value.trim();
+  if (!title || !artist){ say('Servono titolo e autore.', true); return; }
+  guarded(() => lookup({title, artist, album:'', year: $('#tYear').value.trim(), by:''}));
+});
+renderHist();
+</script>
+</body>
+</html>
